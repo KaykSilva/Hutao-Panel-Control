@@ -6,14 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
-        return view('admin.users', [
+        return Inertia::render('Admin/Users', [
             'users' => User::query()->latest()->paginate(20),
+            'status' => session('status'),
         ]);
     }
 

@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\BotMessage;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request): Response
     {
         $messages = BotMessage::query()
             ->whereHas('contact', fn ($query) => $query
@@ -18,7 +19,7 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        return view('dashboard', [
+        return Inertia::render('Dashboard', [
             'user' => $request->user(),
             'messages' => $messages,
         ]);

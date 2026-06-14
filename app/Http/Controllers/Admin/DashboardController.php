@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\BotContact;
 use App\Models\BotMessage;
 use App\Models\User;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(): Response
     {
-        return view('admin.dashboard', [
+        return Inertia::render('Admin/Dashboard', [
             'usersCount' => User::query()->count(),
             'contactsCount' => BotContact::query()->count(),
             'messagesCount' => BotMessage::query()->count(),
