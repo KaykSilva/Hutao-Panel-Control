@@ -50,6 +50,49 @@ class PlatformTest extends TestCase
         $this->assertDatabaseHas('bot_messages', ['content' => 'Oi', 'direction' => 'inbound']);
     }
 
+    public function test_bot_can_find_user_using_phone_variants(): void
+    {
+        BotSetting::query()->create([
+            'key' => 'api_token',
+            'value' => 'secret-token',
+        ]);
+
+        $user = User::factory()->create([
+            'name' => 'Kayk',
+            'phone' => '98981895794',
+        ]);
+
+        $this->withHeader('X-Bot-Token', 'secret-token')
+            ->getJson('/api/bot/user?phone=5598981895794')
+            ->assertOk()
+            ->assertJson([
+                'id' => $user->id,
+                'phone' => '98981895794',
+            ]);
+    }
+
+    public function test_bot_can_find_user_using_normalized_whatsapp_id(): void
+    {
+        BotSetting::query()->create([
+            'key' => 'api_token',
+            'value' => 'secret-token',
+        ]);
+
+        $user = User::factory()->create([
+            'name' => 'Administrador',
+            'phone' => '98981895794',
+            'whatsapp_id' => '30417226834026',
+        ]);
+
+        $this->withHeader('X-Bot-Token', 'secret-token')
+            ->getJson('/api/bot/user?phone=30417226834026&whatsapp_id=30417226834026%40lid')
+            ->assertOk()
+            ->assertJson([
+                'id' => $user->id,
+                'whatsapp_id' => '30417226834026',
+            ]);
+    }
+
     public function test_bot_api_rejects_invalid_token(): void
     {
         BotSetting::query()->create([

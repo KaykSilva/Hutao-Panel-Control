@@ -7,6 +7,8 @@ use App\Models\BotContact;
 use App\Models\BotMessage;
 use App\Models\BotSetting;
 use App\Models\User;
+use App\Support\PhoneNumber;
+use App\Support\WhatsappId;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -28,9 +30,15 @@ class BotController extends Controller
             'whatsapp_id' => ['required_without:phone', 'nullable', 'string'],
         ]);
 
+        $phoneVariants = PhoneNumber::variants($data['phone'] ?? null);
+        $whatsappIdVariants = WhatsappId::variants($data['whatsapp_id'] ?? null);
+
         $user = User::query()
-            ->when($data['phone'] ?? null, fn ($query, $phone) => $query->orWhere('phone', $phone))
-            ->when($data['whatsapp_id'] ?? null, fn ($query, $id) => $query->orWhere('whatsapp_id', $id))
+            ->where(function ($query) use ($phoneVariants, $whatsappIdVariants): void {
+                $query
+                    ->when($phoneVariants !== [], fn ($query) => $query->orWhereIn('phone', $phoneVariants))
+                    ->when($whatsappIdVariants !== [], fn ($query) => $query->orWhereIn('whatsapp_id', $whatsappIdVariants));
+            })
             ->first();
 
         abort_if(! $user, 404, 'User not found.');
@@ -53,14 +61,19 @@ class BotController extends Controller
             'whatsapp_id' => ['required', 'string', 'max:255'],
         ]);
 
+        $phoneVariants = PhoneNumber::variants($data['phone'] ?? null);
+
         $user = User::query()
-            ->when($data['email'] ?? null, fn ($query, $email) => $query->orWhere('email', $email))
-            ->when($data['phone'] ?? null, fn ($query, $phone) => $query->orWhere('phone', $phone))
+            ->where(function ($query) use ($data, $phoneVariants): void {
+                $query
+                    ->when($data['email'] ?? null, fn ($query, $email) => $query->orWhere('email', $email))
+                    ->when($phoneVariants !== [], fn ($query) => $query->orWhereIn('phone', $phoneVariants));
+            })
             ->firstOrFail();
 
         $user->update([
             'phone' => $data['phone'] ?? $user->phone,
-            'whatsapp_id' => $data['whatsapp_id'],
+            'whatsapp_id' => WhatsappId::normalize($data['whatsapp_id']),
             'whatsapp_linked_at' => now(),
         ]);
 
@@ -79,6 +92,8 @@ class BotController extends Controller
             'external_id' => ['nullable', 'string', 'max:255'],
             'payload' => ['nullable', 'array'],
         ]);
+
+        $data['whatsapp_id'] = WhatsappId::normalize($data['whatsapp_id'] ?? null) ?: null;
 
         $contact = BotContact::query()->updateOrCreate(
             ['phone' => $data['phone']],
