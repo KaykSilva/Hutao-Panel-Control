@@ -9,6 +9,8 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 const form = useForm({
     name: '',
     email: '',
+    phone: '',
+    whatsapp_id: '',
     password: '',
     password_confirmation: '',
 });
@@ -54,6 +56,37 @@ const submit = () => {
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel for="phone" value="Telefone do WhatsApp" />
+
+                <TextInput
+                    id="phone"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.phone"
+                    required
+                    autocomplete="tel"
+                    placeholder="5585999999999"
+                />
+
+                <InputError class="mt-2" :message="form.errors.phone" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel for="whatsapp_id" value="ID do WhatsApp informado pelo bot" />
+
+                <TextInput
+                    id="whatsapp_id"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.whatsapp_id"
+                    required
+                    placeholder="Use !id no bot"
+                />
+
+                <InputError class="mt-2" :message="form.errors.whatsapp_id" />
             </div>
 
             <div class="mt-4">

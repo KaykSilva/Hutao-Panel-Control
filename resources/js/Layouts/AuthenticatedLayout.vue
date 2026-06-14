@@ -40,6 +40,12 @@ const showingNavigationDropdown = ref(false);
                                     Dashboard
                                 </NavLink>
                                 <NavLink
+                                    :href="route('accounts.index')"
+                                    :active="route().current('accounts.*')"
+                                >
+                                    Contas
+                                </NavLink>
+                                <NavLink
                                     v-if="$page.props.auth.user.role === 'admin'"
                                     :href="route('admin.dashboard')"
                                     :active="route().current('admin.dashboard')"
@@ -166,6 +172,12 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('accounts.index')"
+                            :active="route().current('accounts.*')"
+                        >
+                            Contas
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             v-if="$page.props.auth.user.role === 'admin'"
